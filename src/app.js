@@ -11,6 +11,9 @@ app.use(express.json())
 app.use(cors())
 dotenv.config()
 
+const time = dayjs().format('HH:mm:ss');
+
+
 let db
 const mongoClient = new MongoClient(process.env.DATABASE_URL)
 mongoClient.connect()
@@ -28,8 +31,7 @@ mongoClient.connect()
         
         if (validation.error) {
           const error = validation.error.details
-          console.log("Todos os campos deverão ser obrigatórios")
-          res.status(422).send(error)
+          res.status(422).send("Todos os campos são obrigatórios")
           return;
         }
 
@@ -38,14 +40,13 @@ mongoClient.connect()
 
         const newParticipant = { name, lastStatus: Date.now() }
 
-        const time = dayjs().format('HH:mm:ss');
-          const userInfo = { 
-            from: name,
-            to: 'Todos',
-            text: 'entra na sala...',
-            type: 'status',
-            time: time
-        }
+        const userInfo = { 
+          from: name,
+          to: 'Todos',
+          text: 'entra na sala...',
+          type: 'status',
+          time: time
+      }
 
         try {
           
@@ -66,8 +67,52 @@ mongoClient.connect()
     .catch((err) => res.status(500).send(err.message))
     })
 
-    
+    app.get ("/messages", async (req, res) => {
 
+      await db.collection("messages").find().toArray()
+      .then((messages) => res.status(200).send(messages))
+      .catch((err) => res.status(500).send(err.message))
+
+    })
+    
+    app.post ("/messages", async (req, res) => {
+
+    const { to , text, type } = req.body
+    const user = req.headers.user
+    const message = {from: user, to: to, text: text, type: type, time: time }
+    const participantOnline = db.collection("participants").findOne({name: user})
+
+    if(!participantOnline) return res.status(404).send("Você precisa estar online para enviar mensagem")
+
+    const userSchema = joi.object({
+      to: joi.string().required(),
+      text: joi.string().required(),
+      type: joi.string().valid("message", "private_message").required(),
+      from: joi.string().required()
+    });
+
+    const validation = userSchema.validate(user);
+
+    if (validation.error) {
+      const error = validation.error.details
+      res.status(422).send("Todos os campos são obrigatórios")
+      return;
+    }
+    
+    try{
+
+    await db.collection("messages").insertOne(message)
+    res.sendStatus(201)
+    console.log(participantsOnline)
+    }
+
+    catch(error){
+
+    res.sendStatus(404).send(error)
+
+    }
+
+    })
 
 const PORT = 5000
 app.listen(PORT, ()=> console.log(`servidor rodando na porta ${PORT}`))
