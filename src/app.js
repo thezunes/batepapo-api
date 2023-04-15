@@ -79,8 +79,9 @@ mongoClient.connect()
 
     const { to , text, type } = req.body
     const user = req.headers.user
-    const message = {from: user, to: to, text: text, type: type, time: time }
-    const participantOnline = db.collection("participants").findOne({name: user})
+    const fullMessage = {from: user, to: to, text: text, type: type, time: time }
+    const message = { to: to, text: text, type: type }
+    const participantOnline = await db.collection("participants").findOne({name: user})
 
     if(!participantOnline) return res.status(404).send("Você precisa estar online para enviar mensagem")
 
@@ -88,28 +89,24 @@ mongoClient.connect()
       to: joi.string().required(),
       text: joi.string().required(),
       type: joi.string().valid("message", "private_message").required(),
-      from: joi.string().required()
-    });
+     });
 
-    const validation = userSchema.validate(user);
-
+    const validation = userSchema.validate(message, { abortEarly: false });
+    
     if (validation.error) {
-      const error = validation.error.details
-      res.status(422).send("Todos os campos são obrigatórios")
-      return;
+      const errors = validation.error.details.map((detail) => detail.message);
+      return res.status(422).send(errors);
     }
     
     try{
 
-    await db.collection("messages").insertOne(message)
+    await db.collection("messages").insertOne(fullMessage)
     res.sendStatus(201)
-    console.log(participantsOnline)
     }
 
-    catch(error){
+    catch{
 
-    res.sendStatus(404).send(error)
-
+    res.sendStatus(404)
     }
 
     })
