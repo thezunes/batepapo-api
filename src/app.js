@@ -51,7 +51,7 @@ mongoClient.connect()
           
           await db.collection("participants").insertOne(newParticipant)
           res.status(201).send("Pariticipante adicionado")
-          await db.collection("message").insertOne(userInfo)
+          await db.collection("messages").insertOne(userInfo)
         
         }
         catch{ 
