@@ -40,12 +40,7 @@ mongoClient.connect()
 
         const newParticipant = { name, lastStatus: Date.now() }
 
-        const horaAtual = dayjs().format('HH:mm:ss');
-
-
-        try {
-          
-          const time = dayjs().format('HH:mm:ss');
+        const time = dayjs().format('HH:mm:ss');
           const userInfo = { 
             from: name,
             to: 'Todos',
@@ -54,16 +49,27 @@ mongoClient.connect()
             time: time
         }
 
+        try {
+          
           await db.collection("participants").insertOne(newParticipant)
           res.status(201).send("Pariticipante adicionado")
           await db.collection("message").insertOne(userInfo)
-          
-
+        
         }
         catch{ 
           res.status(404)
         }
     })
+
+    app.get("/participants", async (req, res) => {
+
+    await db.collection("participants").find().toArray() 
+    .then((participants) => participants ? res.status(200).send(participants) : res.status(200).send({}))
+    .catch((err) => res.status(500).send(err.message))
+    })
+
+    
+
 
 const PORT = 5000
 app.listen(PORT, ()=> console.log(`servidor rodando na porta ${PORT}`))
