@@ -5,16 +5,14 @@ import dotenv from "dotenv"
 import joi from "joi"
 import dayjs from "dayjs"
 
+dotenv.config()
 const app = express()
 app.use(express.json())
 app.use(cors())
 dotenv.config()
 
-
-
-
 let db
-const mongoClient = new MongoClient("mongodb://0.0.0.0:27017/uol")
+const mongoClient = new MongoClient(process.env.DATABASE_URL)
 mongoClient.connect()
     .then(() => db = mongoClient.db())
     .catch((err) => console.log(err.message))
@@ -36,7 +34,7 @@ mongoClient.connect()
         }
 
         const names = await db.collection("participants").findOne({name: name})
-        if(names) return res.status(422).send("Usuário já cadastrado")
+        if(names) return res.status(409).send("Usuário já cadastrado")
 
         const newParticipant = { name, lastStatus: Date.now() }
 
@@ -64,7 +62,7 @@ mongoClient.connect()
     app.get("/participants", async (req, res) => {
 
     await db.collection("participants").find().toArray() 
-    .then((participants) => participants ? res.status(200).send(participants) : res.status(200).send({}))
+    .then((participants) => (participants ? res.status(200).send(participants) : res.status(200).send({})))
     .catch((err) => res.status(500).send(err.message))
     })
 
