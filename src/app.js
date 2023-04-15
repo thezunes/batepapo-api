@@ -83,7 +83,10 @@ mongoClient.connect()
     const message = { to: to, text: text, type: type }
     const participantOnline = await db.collection("participants").findOne({name: user})
 
-    if(!participantOnline) return res.status(404).send("Você precisa estar online para enviar mensagem")
+    if(!participantOnline) return res.status(422).send("Você precisa estar online para enviar mensagem");
+    if(!user) return res.status(422).send("user não recebido pelo header");
+
+    
 
     const userSchema = joi.object({
       to: joi.string().required(),
