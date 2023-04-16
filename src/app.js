@@ -90,9 +90,9 @@ mongoClient.connect()
 
       let limit = parseInt(req.query.limit)*-1;
       
-      if (isNaN(limit) || limit === 0 || limit*-1 < 0) return res.status(422);
+      if (isNaN(limit) || limit === 0 || limit*-1 < 0) return  res.status(422).send();
       
-      if(limit === ""){ limit = "" } //
+      if(limit === ""){ limit = "" } 
       
       try{
          const messages = await db.collection("messages").find({
@@ -105,6 +105,7 @@ mongoClient.connect()
       res.status(200).send(messages.slice(limit))
       }
       catch{
+        res.status(422)
       }
  
     })
