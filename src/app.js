@@ -161,22 +161,20 @@ mongoClient.connect()
         return res.status(404).send(errors);
       }
 
-      const userOnline = await db.collection("participants").findOne({name: `${user}`})
+      const userOnline = await db.collection("participants").findOne({name: user})
 
-      if(!userOnline) return res.status(404)
+      if(!userOnline) return res.status(404);
 
     try{ 
       await db.collection("participants").updateOne(
         { name: user },
         { $set: { lastStatus: Date.now() } } 
-      );      res.status(200)
-
-      
-
+      );      
+      res.status(200).send()
 
      }
     catch{
-      console.log("erro")
+      res.status(404).send()
     }
     })
 
