@@ -90,7 +90,7 @@ mongoClient.connect()
 
       let limit = parseInt(req.query.limit)*-1;
       
-      if (isNaN(limit) || limit === 0 || limit*-1 < 0) return  res.status(422).send();
+      if (isNaN(limit) || limit === 0 || limit*-1 < 0) return res.status(422).send();
       
       if(limit === ""){ limit = "" } 
       
@@ -153,6 +153,8 @@ mongoClient.connect()
 
       const user = req.headers.user;
 
+      if(!user) return res.status(404).send();
+      
       const userSchema = joi.string().required();
       const validation = userSchema.validate(user, { abortEarly: false });
       
@@ -163,7 +165,8 @@ mongoClient.connect()
 
       const userOnline = await db.collection("participants").findOne({name: user})
 
-      if(!userOnline) return res.status(404);
+      if(!userOnline) return res.status(404).send();
+      
 
     try{ 
       await db.collection("participants").updateOne(
