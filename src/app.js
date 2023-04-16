@@ -14,6 +14,7 @@ dotenv.config()
 const time = dayjs().format('HH:mm:ss');
 
 
+
 let db
 const mongoClient = new MongoClient(process.env.DATABASE_URL)
 mongoClient.connect()
@@ -53,7 +54,23 @@ mongoClient.connect()
           await db.collection("participants").insertOne(newParticipant)
           res.status(201).send("Pariticipante adicionado")
           await db.collection("messages").insertOne(userInfo)
-        
+          setInterval(async () => {
+
+            const participant = await db.collection("participants").findOne({name: name });
+            if(participant) {
+            if ((Date.now() - participant.lastStatus) < 10000) {
+              console.log(`${name} está online`);
+            } else {
+              await db.collection("participants").deleteOne({ name: name });
+              await db.collection("messages").insertOne({ 
+                from: name,
+                to: 'Todos',
+                text: 'sai da sala...',
+                type: 'status',
+                time: time
+              }) 
+            } }
+          }, 15000);
         }
         catch{ 
           res.status(422)
@@ -75,7 +92,7 @@ mongoClient.connect()
       
       if (isNaN(limit) || limit === 0 || limit*-1 < 0) return res.status(422);
       
-      if(limit === ""){ limit = "" }
+      if(limit === ""){ limit = "" } //
       
       try{
          const messages = await db.collection("messages").find({
@@ -144,13 +161,18 @@ mongoClient.connect()
       }
 
       const userOnline = await db.collection("participants").findOne({name: `${user}`})
+
       if(!userOnline) return res.status(404)
-      
+
     try{ 
       await db.collection("participants").updateOne(
         { name: user },
         { $set: { lastStatus: Date.now() } } 
       );      res.status(200)
+
+      
+
+
      }
     catch{
       console.log("erro")
