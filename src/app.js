@@ -162,7 +162,9 @@ mongoClient.connect()
         const errors = validation.error.details.map((detail) => detail.message);
         return res.status(404).send(errors);
       }
-
+// 1 - coloquei pra cima mas esqueci do const
+// 2 - ajustei const e tirei joi
+// 3 - ativei joi
     try{ 
       await db.collection("participants").updateOne(
         { name: user },
