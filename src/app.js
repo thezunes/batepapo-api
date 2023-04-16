@@ -155,16 +155,13 @@ mongoClient.connect()
       if(!user) return res.status(404).send();
       if(!userOnline) return res.status(404).send();
 
-      // const userSchema = joi.string().required();
-      // const validation = userSchema.validate(user, { abortEarly: false });
+      const userSchema = joi.string().required();
+      const validation = userSchema.validate(user, { abortEarly: false });
       
-      // if (validation.error) {
-      //   const errors = validation.error.details.map((detail) => detail.message);
-      //   return res.status(404).send(errors);
-      // }
-
-
-      
+      if (validation.error) {
+        const errors = validation.error.details.map((detail) => detail.message);
+        return res.status(404).send(errors);
+      }
 
     try{ 
       await db.collection("participants").updateOne(
