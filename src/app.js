@@ -70,14 +70,15 @@ mongoClient.connect()
     app.get ("/messages", async (req, res) => {
 
       const user = req.headers.user
-      let limit = parseInt(req.query.limit) * -1;
 
-       
-      if(limit === 0 || limit*-1 < 0) return res.status(422);
-
+      let limit = parseInt(req.query.limit)*-1;
+      
+      if (isNaN(limit) || limit === 0 || limit*-1 < 0) return res.status(422);
+      
       if(limit === ""){ limit = "" }
       
       try{
+        console.log(limit)
         const messages = await db.collection("messages").find({
           $or: [
             { to: new RegExp(`^${user}`) },
@@ -88,7 +89,6 @@ mongoClient.connect()
       res.status(200).send(messages.slice(limit))
       }
       catch{
-        res.status(422) 
       }
  
     })
@@ -133,4 +133,4 @@ mongoClient.connect()
     })
 
 const PORT = 5000
-app.listen(PORT, ()=> console.log(`servidor rodando na porta ${PORT}`))
+app.listen(PORT, ()=> console.log(`Server running... PORT:${PORT}`))
