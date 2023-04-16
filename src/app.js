@@ -150,20 +150,20 @@ mongoClient.connect()
     app.post ("/status", async (req,res) => { 
 
       const user = req.headers.user;
-
-      if(!user) return res.status(404).send();
-
-      const userSchema = joi.string().required();
-      const validation = userSchema.validate(user, { abortEarly: false });
-      
-      if (validation.error) {
-        const errors = validation.error.details.map((detail) => detail.message);
-        return res.status(404).send(errors);
-      }
-
       const userOnline = await db.collection("participants").findOne({name: user})
 
+      if(!user) return res.status(404).send();
       if(!userOnline) return res.status(404).send();
+
+      // const userSchema = joi.string().required();
+      // const validation = userSchema.validate(user, { abortEarly: false });
+      
+      // if (validation.error) {
+      //   const errors = validation.error.details.map((detail) => detail.message);
+      //   return res.status(404).send(errors);
+      // }
+
+
       
 
     try{ 
