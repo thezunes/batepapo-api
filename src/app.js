@@ -36,7 +36,7 @@ mongoClient.connect()
         }
 
         const names = await db.collection("participants").findOne({name: name})
-        if(names) return res.status(422).send("Usuário já cadastrado")
+        if(names) return res.status(409).send("Usuário já cadastrado")
 
         const newParticipant = { name, lastStatus: Date.now() }
 
@@ -70,7 +70,13 @@ mongoClient.connect()
     app.get ("/messages", async (req, res) => {
 
       const user = req.headers.user
+      let limit = parseInt(req.query.limit) * -1;
 
+       
+      if(limit === 0 || limit*-1 < 0) return res.status(422);
+
+      if(limit === ""){ limit = "" }
+      
       try{
         const messages = await db.collection("messages").find({
           $or: [
@@ -79,7 +85,7 @@ mongoClient.connect()
             { to: /^Todos/ }
           ]
         }).toArray();
-      res.status(200).send(messages)
+      res.status(200).send(messages.slice(limit))
       }
       catch{
         res.status(422) 
