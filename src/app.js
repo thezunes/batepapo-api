@@ -150,10 +150,8 @@ mongoClient.connect()
     app.post ("/status", async (req,res) => { 
 
       const user = req.headers.user;
-      
-      const userName=stripHtml(req.headers.user).result.trim();
-    
-      if(!userName) return res.status(404);
+
+      if(!user) return res.status(404).send();
 
       const userSchema = joi.string().required();
       const validation = userSchema.validate(user, { abortEarly: false });
