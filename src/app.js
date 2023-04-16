@@ -78,8 +78,7 @@ mongoClient.connect()
       if(limit === ""){ limit = "" }
       
       try{
-        console.log(limit)
-        const messages = await db.collection("messages").find({
+         const messages = await db.collection("messages").find({
           $or: [
             { to: new RegExp(`^${user}`) },
             { from: new RegExp(`^${user}`)},
@@ -130,6 +129,32 @@ mongoClient.connect()
     res.sendStatus(422)
     }
 
+    })
+
+    app.post ("/status", async (req,res) => { 
+
+      const user = req.headers.user;
+
+      const userSchema = joi.string().required();
+      const validation = userSchema.validate(user, { abortEarly: false });
+      
+      if (validation.error) {
+        const errors = validation.error.details.map((detail) => detail.message);
+        return res.status(404).send(errors);
+      }
+
+      const userOnline = await db.collection("participants").findOne({name: `${user}`})
+      if(!userOnline) return res.status(404)
+      
+    try{ 
+      await db.collection("participants").updateOne(
+        { name: user },
+        { $set: { lastStatus: Date.now() } } 
+      );      res.status(200)
+     }
+    catch{
+      console.log("erro")
+    }
     })
 
 const PORT = 5000
