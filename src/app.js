@@ -13,8 +13,6 @@ dotenv.config()
 
 const time = dayjs().format('HH:mm:ss');
 
-
-
 let db
 const mongoClient = new MongoClient(process.env.DATABASE_URL)
 mongoClient.connect()
@@ -152,9 +150,11 @@ mongoClient.connect()
     app.post ("/status", async (req,res) => { 
 
       const user = req.headers.user;
-
-      if(!user) return res.status(404).send();
       
+      const userName=stripHtml(req.headers.user).result.trim();
+    
+      if(!userName) return res.status(404);
+
       const userSchema = joi.string().required();
       const validation = userSchema.validate(user, { abortEarly: false });
       
